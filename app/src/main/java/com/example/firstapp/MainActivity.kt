@@ -32,5 +32,10 @@ fun AppNavigator() {
         composable("breathing") { BreathingExerciseScreen(navController) }
         composable("soundLibrary") { SoundLibraryScreen(navController) }
 
+        composable("box_breathing") { BoxBreathingScreen(navController)}
+        composable("478_breathing") { FSEBreathingScreen(navController)}
+        composable("diaphragmatic_breathing") {DiaphragmaticBreathingScreen(navController)}
+        composable("altNostril_breathing") {AlternateNostrilBreathingScreen(navController)}
+        composable("wimHof_breathing") {WimHofBreathingScreen(navController)}
     }
 }

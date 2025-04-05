@@ -1,5 +1,3 @@
-package com.example.firstapp
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -10,29 +8,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+import com.example.firstapp.R
 
 @Composable
 fun SoundLibraryScreen(navController: NavController) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp) // Add space between sections
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Sound Library", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = "Sound Library",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
 
+        // Preloaded Sound Library Section (Larger Icon)
         SoundLibrarySection(
             title = "Preloaded Sound Library",
-            onClick = { /* Navigate to Preloaded Sound Library */ }
+            onClick = { navController.navigate("preloaded_sound_library") },
+            iconResId = R.drawable.baseline_library_music_24, // Replace with your icon resource
+            isLargeIcon = true // Indicate it's a large icon
         )
 
-        SoundLibrarySection(
-            title = "Custom Sound Mixing",
-            onClick = { /* Navigate to Custom Sound Mixing */ }
-        )
-
+        // Binaural Beats Integration Section (Default Icon)
         SoundLibrarySection(
             title = "Binaural Beats Integration",
-            onClick = { /* Navigate to Binaural Beats Integration */ }
+            onClick = { navController.navigate("binaural_beats") },
+            iconResId = R.drawable.cadence_48px, // Replace with your icon resource
+            isLargeIcon = true // Indicate it's a default icon
         )
 
         Button(onClick = { navController.popBackStack() }) {
@@ -42,20 +50,22 @@ fun SoundLibraryScreen(navController: NavController) {
 }
 
 @Composable
-fun SoundLibrarySection(title: String, onClick: () -> Unit) {
-    Card(
+fun SoundLibrarySection(title: String, onClick: () -> Unit, iconResId: Int, isLargeIcon: Boolean) { // Add isLargeIcon parameter
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick) // Make the card clickable
+            .clickable(onClick = onClick)
             .padding(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(title, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-            // Add any additional content or icons here
-        }
+        Image(
+            painter = painterResource(id = iconResId),
+            contentDescription = title,
+            modifier = if (isLargeIcon) Modifier.size(150.dp) else Modifier.size(24.dp) // Conditional icon size
+        )
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }

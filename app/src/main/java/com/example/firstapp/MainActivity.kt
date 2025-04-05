@@ -1,4 +1,5 @@
 package com.example.firstapp
+import SoundLibraryScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,11 +32,18 @@ fun AppNavigator() {
         composable("questionnaire") { QuestionnaireScreen(navController) }
         composable("breathing") { BreathingExerciseScreen(navController) }
         composable("soundLibrary") { SoundLibraryScreen(navController) }
+        composable("preloaded_sound_library") { PreLoadedSoundLibraryScreen(navController) }
+        composable("binaural_beats") { BinauralBeatsScreen(navController) }
+
+
 
         composable("box_breathing") { BoxBreathingScreen(navController)}
         composable("478_breathing") { FSEBreathingScreen(navController)}
         composable("diaphragmatic_breathing") {DiaphragmaticBreathingScreen(navController)}
         composable("altNostril_breathing") {AlternateNostrilBreathingScreen(navController)}
         composable("wimHof_breathing") {WimHofBreathingScreen(navController)}
+
+
+
     }
 }

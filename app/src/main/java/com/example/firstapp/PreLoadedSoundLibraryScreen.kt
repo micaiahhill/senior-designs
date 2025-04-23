@@ -36,7 +36,7 @@ fun PreLoadedSoundLibraryScreen(navController: NavController? = null) {
     val context = LocalContext.current
 
     val sounds = listOf(
-        SoundItem("Waves", R.drawable.waves, R.raw.waves),
+        SoundItem("Waves", R.drawable.waves, R.raw.waves2),
         SoundItem("Lofi", R.drawable.lofi, R.raw.lofi),
         SoundItem("Airplane", R.drawable.airplane, R.raw.airplane),
         SoundItem("Rainforest", R.drawable.rainforest, R.raw.rainforest),

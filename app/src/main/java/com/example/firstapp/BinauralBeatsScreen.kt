@@ -1,164 +1,71 @@
-package com.example.firstapp
-
-import android.media.MediaPlayer
-import android.os.Bundle
-import android.os.CountDownTimer
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-
-
-enum class BeatDuration(val label: String, val seconds: Int) {
-    SHORT("45 sec", 45),
-    MEDIUM("5 min", 5 * 60),
-    LONG("20 min", 20 * 60)
-}
-
-data class Beat(val name: String, val rawId: Int)
 
 @Composable
-fun BinauralBeatsScreen(navController: NavController) {
-    val context = LocalContext.current
-
-    val beats = listOf(
-        Beat("Alpha", R.raw.alpha),
-        Beat("Beta", R.raw.beta),
-        Beat("Delta", R.raw.delta),
-        Beat("Theta", R.raw.theta)
-    )
-
-    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-    var isPlaying by remember { mutableStateOf(false) }
-    var remainingTime by remember { mutableStateOf<Int?>(null) }
-    var timer by remember { mutableStateOf<CountDownTimer?>(null) }
-    var currentPlayingBeat by remember { mutableStateOf<Beat?>(null) }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            mediaPlayer?.release()
-            timer?.cancel()
-        }
-    }
-
-    fun stopPlayback() {
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
-        mediaPlayer = null
-        timer?.cancel()
-        remainingTime = null
-        isPlaying = false
-        currentPlayingBeat = null
-    }
-
-    fun playBeat(beat: Beat, durationSeconds: Int) {
-        stopPlayback()
-        mediaPlayer = MediaPlayer.create(context, beat.rawId)?.apply {
-            start()
-            isPlaying = true
-        }
-        currentPlayingBeat = beat
-        remainingTime = durationSeconds
-
-        timer = object : CountDownTimer(durationSeconds * 1000L, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                remainingTime = (millisUntilFinished / 1000).toInt()
-            }
-
-            override fun onFinish() {
-                stopPlayback()
-            }
-        }.start()
-    }
+fun BinauralBeatsScreen(navController: NavController, suggestedBeat: String? = null) {
+    val beats = listOf("Alpha", "Beta", "Theta", "Delta")
+    var selectedBeat by remember { mutableStateOf(suggestedBeat ?: "Alpha") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(Color(0xFFB8DCD4)) // Soft blue like the BeatPlayer screen
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(text = "Binaural Beats", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = "Binaural Beats",
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            color = Color(0xFF333333)
+        )
+
+        if (suggestedBeat != null) {
+            Text(
+                text = "Suggested Beat: $suggestedBeat",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF666666)
+            )
+        }
 
         beats.forEach { beat ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            Button(
+                onClick = {
+                    selectedBeat = beat
+                    navController.navigate("binaural_${beat.lowercase()}")
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .height(48.dp)
             ) {
-                Text(beat.name, style = MaterialTheme.typography.titleMedium)
-
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(animationSpec = tween(600)) + slideInHorizontally(initialOffsetX = { -100 }),
-                    exit = fadeOut()
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        BeatDuration.values().forEach { dur ->
-                            Button(
-                                onClick = { playBeat(beat, dur.seconds) },
-                                enabled = !isPlaying
-                            ) {
-                                Text(dur.label)
-                            }
-                        }
-                    }
-                }
+                Text("Listen to $beat Beat", color = Color(0xFF333333))
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = { stopPlayback() },
-            enabled = isPlaying
+            onClick = {
+                navController.navigate("soundLibrary")
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88BDBC)),
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .height(48.dp)
         ) {
-            Text("Stop")
-        }
-
-        if (currentPlayingBeat != null && remainingTime != null) {
-            val infiniteTransition = rememberInfiniteTransition()
-            val pulse by infiniteTransition.animateFloat(
-                initialValue = 1f,
-                targetValue = 1.1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(800, easing = LinearEasing),
-                    repeatMode = RepeatMode.Reverse
-                )
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Playing: ${currentPlayingBeat!!.name}",
-                modifier = Modifier.scale(pulse),
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            AnimatedContent(targetState = remainingTime!!) { time ->
-                val mins = time / 60
-                val secs = time % 60
-                Text("Time Left: ${String.format("%02d:%02d", mins, secs)}")
-            }
-        } else {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Select a beat and duration")
+            Text("Try our SoundLibrary", color = Color.White)
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewBinauralBeatsScreen() {
-
 }

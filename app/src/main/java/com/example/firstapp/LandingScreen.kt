@@ -1,5 +1,7 @@
 package com.example.firstapp
 
+import SessionManager
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -9,13 +11,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun LandingScreen(navController: NavController) {
+fun LandingScreen(navController: NavController, sessionManager: SessionManager) {
+    val context = LocalContext.current
     Box(modifier = Modifier.fillMaxSize()) {
         // Top Yellow Section
         Box(
@@ -59,6 +63,27 @@ fun LandingScreen(navController: NavController) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))
             ) {
                 Text("Start Assessment", fontSize = 18.sp, color = Color.White)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp)) // Add some space
+
+            Button(
+                onClick = {
+                    sessionManager.logoutUser()
+
+                    // Redirect user to LoginActivity and clear backstack
+                    val intent = Intent(context, LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    context.startActivity(intent)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            ) {
+                Text(
+                    "Logout",
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
             }
         }
     }

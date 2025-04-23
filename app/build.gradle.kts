@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
 
+
     implementation(libs.material.v1110) // Use the latest stable version
     implementation(libs.google.material)
     androidTestImplementation(libs.androidx.junit)

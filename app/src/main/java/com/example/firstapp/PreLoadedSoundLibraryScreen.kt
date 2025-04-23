@@ -113,6 +113,7 @@ fun PreLoadedSoundLibraryScreen(navController: NavController? = null) {
                                     mediaPlayer?.stop()
                                     mediaPlayer?.release()
                                     mediaPlayer = MediaPlayer.create(context, sound.soundRes)
+                                    mediaPlayer?.isLooping = true
                                     mediaPlayer?.start()
                                     currentlyPlaying = sound.name
                                 }

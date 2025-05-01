@@ -28,7 +28,7 @@ fun BreathingExerciseScreen(navController: NavController) {
         ) {
             Text("Guided Breathing Exercises", fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
-            Spacer(modifier = Modifier.height(100.dp).padding(top = 16.dp, bottom = 24.dp))
+            Spacer(modifier = Modifier.height(5.dp))
 
             // Icons Row
             Row(
@@ -43,7 +43,7 @@ fun BreathingExerciseScreen(navController: NavController) {
                         modifier = Modifier
                             .size(150.dp)
                             .clickable {
-                                navController.navigate("box_breathing")
+                                navController.navigate("box_breathing_tutorial")
                             }
                     )
                     Text("Box")
@@ -57,7 +57,7 @@ fun BreathingExerciseScreen(navController: NavController) {
                         modifier = Modifier
                             .size(150.dp)
                             .clickable {
-                                navController.navigate("478_breathing")
+                                navController.navigate("478_breathing_tutorial")
                             }
                     )
                     Text("4-7-8")
@@ -79,7 +79,7 @@ fun BreathingExerciseScreen(navController: NavController) {
                         modifier = Modifier
                             .size(150.dp)
                             .clickable {
-                                navController.navigate("diaphragmatic_breathing")
+                                navController.navigate("diaphragmatic_breathing_tutorial")
                             }
                     )
                     Text("Diaphragmatic")
@@ -93,7 +93,7 @@ fun BreathingExerciseScreen(navController: NavController) {
                         modifier = Modifier
                             .size(150.dp)
                             .clickable {
-                                navController.navigate("altNostril_breathing")
+                                navController.navigate("altNostril_breathing_tutorial")
                             }
                     )
                     Text("Alternate Nostril")
@@ -114,7 +114,7 @@ fun BreathingExerciseScreen(navController: NavController) {
                         modifier = Modifier
                             .size(150.dp)
                             .clickable {
-                                navController.navigate("wimHof_breathing")
+                                navController.navigate("wimHof_breathing_tutorial")
                             }
                     )
                     Text("Wim Hof")

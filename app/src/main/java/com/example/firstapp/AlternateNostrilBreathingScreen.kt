@@ -13,58 +13,93 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
+
+// New pace data class
+//data class BreathingPace(val label: String, val inhale: Int, val hold: Int, val exhale: Int)
+
+data class Quadruple<A, B, C, D, E>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
+    val fifth: E
+)
 
 @Composable
-fun AlternateNostrilBreathingScreen(
-    navController: NavController,
-    inhaleDuration: Int = 4000, // 4 sec
-    exhaleDuration: Int = 4000 // 4 sec
-) {
-    val singleCycleDuration = inhaleDuration + exhaleDuration
-    val totalCycleDuration = singleCycleDuration * 2 // Inhale Left/Right, Exhale Left/Right
-
-    val infiniteTransition = rememberInfiniteTransition()
-    val progress by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = totalCycleDuration, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        )
+fun AlternateNostrilBreathingScreen(navController: NavController) {
+    val paceOptions = listOf(
+        BreathingPace("Gentle (4-2-4)", 4000, 2000, 4000),
+        BreathingPace("Balanced (5-2-5)", 5000, 2000, 5000),
+        BreathingPace("Deep (6-3-6)", 6000, 3000, 6000)
     )
+
+    var selectedPace by remember { mutableStateOf(paceOptions[1]) }
+    var expanded by remember { mutableStateOf(false) }
+    var started by remember { mutableStateOf(false) }
+
+    val inhaleDuration = selectedPace.inhale
+    val holdDuration = selectedPace.hold
+    val exhaleDuration = selectedPace.exhale
+
+    val totalCycleDuration = (inhaleDuration + holdDuration + exhaleDuration) * 2
+
+    val animatableProgress = remember { Animatable(0f) }
+    val progress = animatableProgress.value
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(started, selectedPace) {
+        if (started) {
+            animatableProgress.stop()
+            animatableProgress.snapTo(0f)
+            animatableProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = totalCycleDuration, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                )
+            )
+        } else {
+            animatableProgress.stop()
+            animatableProgress.snapTo(0f)
+        }
+    }
 
     val elapsedMs = progress * totalCycleDuration
 
-    // Determine phase
     val (phase, leftBarFill, rightBarFill, leftSeconds, rightSeconds) = when {
         elapsedMs < inhaleDuration -> {
-            // Inhale Left
             val fill = (elapsedMs / inhaleDuration).coerceIn(0f, 1f)
             val sec = inhaleDuration / 1000 - (elapsedMs / 1000).toInt()
             Quadruple("Inhale Left", fill, 0f, sec, 0)
         }
-        elapsedMs < inhaleDuration + exhaleDuration -> {
-            // Exhale Right
-            val exhaleElapsed = elapsedMs - inhaleDuration
-            val fill = 1f - (exhaleElapsed / exhaleDuration).coerceIn(0f, 1f)
-            val sec = exhaleDuration / 1000 - (exhaleElapsed / 1000).toInt()
+        elapsedMs < inhaleDuration + holdDuration -> {
+            Quadruple("Hold", 1f, 0f, 0, 0)
+        }
+        elapsedMs < inhaleDuration + holdDuration + exhaleDuration -> {
+            val ex = elapsedMs - inhaleDuration - holdDuration
+            val fill = 1f - (ex / exhaleDuration).coerceIn(0f, 1f)
+            val sec = exhaleDuration / 1000 - (ex / 1000).toInt()
             Quadruple("Exhale Right", 0f, fill, 0, sec)
         }
-        elapsedMs < inhaleDuration * 2 + exhaleDuration -> {
-            // Inhale Right
-            val inhaleElapsed = elapsedMs - (inhaleDuration + exhaleDuration)
-            val fill = (inhaleElapsed / inhaleDuration).coerceIn(0f, 1f)
-            val sec = inhaleDuration / 1000 - (inhaleElapsed / 1000).toInt()
+        elapsedMs < inhaleDuration * 2 + holdDuration + exhaleDuration -> {
+            Quadruple("Hold", 0f, 0f, 0, 0)
+        }
+        elapsedMs < inhaleDuration * 2 + holdDuration * 2 + exhaleDuration -> {
+            val inh = elapsedMs - (inhaleDuration + holdDuration + exhaleDuration + holdDuration)
+            val fill = (inh / inhaleDuration).coerceIn(0f, 1f)
+            val sec = inhaleDuration / 1000 - (inh / 1000).toInt()
             Quadruple("Inhale Right", 0f, fill, 0, sec)
         }
+        elapsedMs < inhaleDuration * 2 + holdDuration * 2 + exhaleDuration + holdDuration -> {
+            Quadruple("Hold", 0f, 1f, 0, 0)
+        }
         else -> {
-            // Exhale Left
-            val exhaleElapsed = elapsedMs - (inhaleDuration * 2 + exhaleDuration)
-            val fill = 1f - (exhaleElapsed / exhaleDuration).coerceIn(0f, 1f)
-            val sec = exhaleDuration / 1000 - (exhaleElapsed / 1000).toInt()
+            val ex = elapsedMs - (inhaleDuration * 2 + holdDuration * 2 + exhaleDuration + holdDuration)
+            val fill = 1f - (ex / exhaleDuration).coerceIn(0f, 1f)
+            val sec = exhaleDuration / 1000 - (ex / 1000).toInt()
             Quadruple("Exhale Left", fill, 0f, sec, 0)
         }
-
     }
 
     Column(
@@ -76,11 +111,30 @@ fun AlternateNostrilBreathingScreen(
     ) {
         Text("Alternate Nostril Breathing", fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
+        // Dropdown
+        Box {
+            OutlinedButton(onClick = { expanded = true }, enabled = !started) {
+                Text("Pace: ${selectedPace.label}")
+            }
+
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                paceOptions.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.label) },
+                        onClick = {
+                            selectedPace = option
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        // Bar animation
         Row(
             horizontalArrangement = Arrangement.spacedBy(32.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left Bar
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
                     modifier = Modifier
@@ -97,13 +151,9 @@ fun AlternateNostrilBreathingScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    if (leftSeconds > 0) "$leftSeconds s" else "",
-                    fontSize = 18.sp
-                )
+                Text(if (leftSeconds > 0) "$leftSeconds s" else "", fontSize = 18.sp)
             }
 
-            // Right Bar
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
                     modifier = Modifier
@@ -120,28 +170,32 @@ fun AlternateNostrilBreathingScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    if (rightSeconds > 0) "$rightSeconds s" else "",
-                    fontSize = 18.sp
-                )
+                Text(if (rightSeconds > 0) "$rightSeconds s" else "", fontSize = 18.sp)
             }
         }
 
-        // Phase Text
         Text(text = phase, fontSize = 20.sp)
 
-        // Back Button
-        Button(onClick = { navController.popBackStack() }) {
-            Text("Back")
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Button(onClick = { navController.popBackStack() }) {
+                Text("Back")
+            }
+            Button(
+                onClick = {
+                    started = false
+                    scope.launch { animatableProgress.snapTo(0f) }
+                },
+                enabled = started
+            ) {
+                Text("Reset")
+            }
+            Button(
+                onClick = { started = true },
+                enabled = !started
+            ) {
+                Text("Start")
+            }
         }
+        RetakeSurveyButton(navController = navController)
     }
 }
-
-// Helper Quadruple data class (since Kotlin doesn’t have it natively)
-data class Quadruple<A, B, C, D, E>(
-    val first: A,
-    val second: B,
-    val third: C,
-    val fourth: D,
-    val fifth: E
-)

@@ -1,44 +1,93 @@
 package com.example.firstapp
 
-
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
+@OptIn(ExperimentalMaterial3Api::class) //make sure to change once app is deployed
 @Composable
 fun QuestionnaireScreen(navController: NavController) {
     val questions = listOf(
-        "How stressed do you feel?",
-        "How focused are you right now?",
-        "How much energy do you have?",
-        "How anxious do you feel?"
+        "Stress",
+        "Energy",
+        "Mental Clarity",
+        "Body Tension"
     )
 
-    var currentQuestionIndex by remember { mutableStateOf(0) }
-    val answers = remember { mutableStateMapOf<String, Int>() }
+    val labelSets = listOf(
+        listOf("Not at all", "Slightly", "Moderately", "Very", "Extremely"),            // Stress
+        listOf("Drained", "Low", "Neutral", "Energetic", "Hyper"),                      // Energy
+        listOf("Scattered", "Distracted", "Neutral", "Focused", "Laser-sharp"),         // Clarity
+        listOf("Loose", "Mild", "Moderate", "Tight", "Extremely tense")                 // Tension
+    )
 
-    if (currentQuestionIndex < questions.size) {
-        QuestionCard(
-            question = questions[currentQuestionIndex],
-            onAnswerSelected = { answer ->
-                answers[questions[currentQuestionIndex]] = answer
-                if (currentQuestionIndex < questions.size - 1) {
-                    currentQuestionIndex++ // Move to next question
-                } else {
-                    analyzeResults(answers, navController)
-                }
+    val answers = remember { mutableStateListOf(2, 2, 2, 2) } // All default to neutral (2)
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(title = { Text("Self Check-In") })
+        },
+        bottomBar = {
+            Button(
+                onClick = { analyzeResults(answers, navController) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text("Submit")
             }
-        )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(16.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            questions.forEachIndexed { index, question ->
+                QuestionCard(
+                    question = question,
+                    value = answers[index],
+                    labels = labelSets[index],
+                    onValueChange = { newValue -> answers[index] = newValue }
+                )
+            }
+        }
     }
 }
 
-fun analyzeResults(answers: Map<String, Int>, navController: NavController) {
-    val stressLevel = answers["How stressed do you feel?"] ?: 3
-    val anxietyLevel = answers["How anxious do you feel?"] ?: 3
+fun analyzeResults(answers: List<Int>, navController: NavController) {
+    val stressHigh = answers[0] >= 3
+    val energyHigh = answers[1] >= 3
+    val clarityHigh = answers[2] >= 3
+    val tensionHigh = answers[3] >= 3
 
-    if (stressLevel >= 4 || anxietyLevel >= 4) {
-        navController.navigate("breathing") // High stress/anxiety → breathing exercises
-    } else {
-        navController.navigate("soundLibrary") // Low stress → sound library
+    val key = listOf(stressHigh, energyHigh, clarityHigh, tensionHigh)
+
+    val recommendation = when (key) {
+        listOf(true, true, true, true) -> "wimHof_breathing"
+        listOf(true, true, true, false) -> "box_breathing"
+        listOf(true, true, false, true) -> "altNostril_breathing"
+        listOf(true, true, false, false) -> "478_breathing"
+        listOf(true, false, true, true) -> "altNostril_breathing"
+        listOf(true, false, true, false) -> "box_breathing"
+        listOf(true, false, false, true) -> "478_breathing"
+        listOf(true, false, false, false) -> "soundLibrary" // if this exists
+        listOf(false, true, true, true) -> "diaphragmatic_breathing"
+        listOf(false, true, true, false) -> "box_breathing"
+        listOf(false, true, false, true) -> "diaphragmatic_breathing"
+        listOf(false, true, false, false) -> "box_breathing"
+        listOf(false, false, true, true) -> "diaphragmatic_breathing"
+        listOf(false, false, true, false) -> "box_breathing"
+        listOf(false, false, false, true) -> "diaphragmatic_breathing"
+        listOf(false, false, false, false) -> "478_breathing"
+        else -> "box_breathing"
     }
+
+
+    navController.navigate("recommendation/$recommendation")
 }

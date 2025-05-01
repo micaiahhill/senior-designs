@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Firstapp</string>
+        <string name="preloaded_sound_library">Preloaded Sound Library</string>
+        <string name="explore_pre_recorded_sounds">Explore a collection of pre-recorded sounds.</string>
+        <string name="see_more">See More</string>
+        <string name="waves">Waves</string>
+        <string name="lofi_sounds">Lofi</string>
+        <string name="airplane">Airplane</string>
+        <string name="rainforest">Rainforest</string>
+        <string name="fire">Fire</string>
+        <string name="jazz">Jazz</string>
+
 </resources>

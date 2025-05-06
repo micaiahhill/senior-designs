@@ -1,6 +1,5 @@
 package com.example.firstapp
 
-import SessionManager
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun LandingScreen(navController: NavController, sessionManager: SessionManager) {
+fun LandingScreen(navController: NavController) {
     val context = LocalContext.current
     Box(modifier = Modifier.fillMaxSize()) {
         // Top Yellow Section
@@ -69,8 +68,7 @@ fun LandingScreen(navController: NavController, sessionManager: SessionManager) 
 
             Button(
                 onClick = {
-                    sessionManager.logoutUser()
-
+                    // Removed SessionManager logout
                     // Redirect user to LoginActivity and clear backstack
                     val intent = Intent(context, LoginActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

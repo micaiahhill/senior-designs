@@ -63,3 +63,8 @@ fun RestorePromptScreen(navController: NavController, context: Context) {
         }
     }
 }
+
+@Composable
+fun LogoutButton(navController: NavController, current: Context) {
+
+}

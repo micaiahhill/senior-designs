@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -28,7 +29,12 @@ fun QuestionCard(
             onValueChange = { onValueChange(it.toInt()) },
             valueRange = 0f..4f,
             steps = 3,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp),
+            colors = SliderDefaults.colors(
+                thumbColor = Color(0xFFADD8E6), // Light Blue for the thumb
+                activeTrackColor = Color(0xFFADD8E6).copy(alpha = 0.8f), // Light Blue for the active track
+                inactiveTrackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+            )
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
